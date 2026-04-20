@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Section Controller DSS{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <p class="eyebrow">Illustrative prototype</p>
+        <h1>Section Traffic Decision Support</h1>
+      </div>
+    </div>
+    <p class="section-line">{{ section }}</p>
+  </header>
+
+  <nav class="main-nav" aria-label="Primary">
+    <a href="{{ url_for('dashboard') }}" class="{% if page == 'dashboard' %}active{% endif %}">Live board</a>
+    <a href="{{ url_for('control_room') }}" class="{% if page == 'controlroom' %}active{% endif %}">Control room</a>
+    <a href="{{ url_for('manage') }}" class="{% if page == 'manage' %}active{% endif %}">Manage trains</a>
+    <a href="{{ url_for('what_if') }}" class="{% if page == 'whatif' %}active{% endif %}">What-if</a>
+    <a href="{{ url_for('override') }}" class="{% if page == 'override' %}active{% endif %}">Overrides</a>
+    <a href="{{ url_for('audit') }}" class="{% if page == 'audit' %}active{% endif %}">Audit trail</a>
+  </nav>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Demo only — not connected to live signalling or TMS. Replace heuristics with certified optimizers and validated interlocks before operational use.</p>
+  </footer>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

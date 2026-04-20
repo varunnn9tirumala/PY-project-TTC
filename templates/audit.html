@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Audit trail · Section DSS{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2>Immutable activity log</h2>
+  <p class="lede">
+    Every optimization, what-if preview, override, and reset is recorded for post-shift review and KPI correlation.
+    Wire this to durable storage and WORM compliance targets in a production deployment.
+  </p>
+</section>
+
+<section class="panel">
+  <form method="get" class="form-grid">
+    <label>Search text <input name="q" value="{{ request.args.get('q', '') }}" placeholder="train / route / action"></label>
+    <label>Event code <input name="event" value="{{ request.args.get('event', '') }}" placeholder="e.g. WHAT-IF"></label>
+    <div class="form-actions"><button class="btn primary" type="submit">Filter logs</button></div>
+    <div class="form-actions"><a class="btn ghost" href="{{ url_for('audit_export') }}">Export CSV</a></div>
+  </form>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Event</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in entries %}
+        <tr>
+          <td>{{ row.ts }}</td>
+          <td><span class="tag">{{ row.event }}</span></td>
+          <td>{{ row.detail }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">No events yet — trigger a re-optimization or what-if run.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

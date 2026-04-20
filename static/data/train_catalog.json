@@ -1,0 +1,14 @@
+{
+  "train_templates": [
+    {"base_no":12000,"name":"Vande Bharat","category":"Vande Bharat","priority":96,"platform_need":1,"avg_speed_kmph":105,"delay_probability":0.08},
+    {"base_no":12300,"name":"Rajdhani Express","category":"Rajdhani","priority":95,"platform_need":1,"avg_speed_kmph":95,"delay_probability":0.09},
+    {"base_no":12050,"name":"Shatabdi Express","category":"Shatabdi","priority":92,"platform_need":1,"avg_speed_kmph":92,"delay_probability":0.1},
+    {"base_no":12200,"name":"Duronto Express","category":"Duronto","priority":90,"platform_need":1,"avg_speed_kmph":88,"delay_probability":0.11},
+    {"base_no":12600,"name":"Superfast Express","category":"Superfast","priority":80,"platform_need":1,"avg_speed_kmph":75,"delay_probability":0.16},
+    {"base_no":17000,"name":"Mail Express","category":"Mail/Express","priority":62,"platform_need":1,"avg_speed_kmph":62,"delay_probability":0.2},
+    {"base_no":56000,"name":"Passenger","category":"Passenger","priority":42,"platform_need":1,"avg_speed_kmph":45,"delay_probability":0.26},
+    {"base_no":67000,"name":"MEMU Service","category":"MEMU/DEMU","priority":36,"platform_need":1,"avg_speed_kmph":38,"delay_probability":0.22},
+    {"base_no":47000,"name":"Freight Rake","category":"Freight","priority":24,"platform_need":0,"avg_speed_kmph":38,"delay_probability":0.29},
+    {"base_no":70000,"name":"Special Relief","category":"Special","priority":52,"platform_need":1,"avg_speed_kmph":58,"delay_probability":0.18}
+  ]
+}

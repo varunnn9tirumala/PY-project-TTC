@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}What-if · Section DSS{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2>Disruption lab</h2>
+  <p class="lede">
+    Layer an incident delay on a train and preview a fresh precedence pass without mutating the live board until you apply overrides separately.
+  </p>
+  {% if message %}
+  <p class="banner">{{ message }}</p>
+  {% endif %}
+  <form method="post" class="form-grid">
+    <label>
+      Scenario
+      <select name="scenario">
+        <option value="custom">Custom train delay</option>
+        <option value="rain">Rain delay</option>
+        <option value="signal_failure">Signal failure</option>
+        <option value="breakdown">Breakdown</option>
+        <option value="platform_blocked">Platform blocked</option>
+        <option value="special_train_added">Special train added</option>
+        <option value="peak_hour">Peak hour congestion</option>
+      </select>
+    </label>
+    <label>
+      Train number
+      <input name="train_code" type="text" placeholder="e.g. 12724 (optional)">
+    </label>
+    <label>
+      Extra delay (minutes)
+      <input name="extra_delay" type="number" min="0" max="180" value="10" required>
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Run preview</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <header class="panel-head">
+    <h3>Before vs after</h3>
+    <p class="muted">Compare KPI impact of simulated disruptions and rerouting suggestions.</p>
+  </header>
+  <div class="chart-grid">
+    <canvas id="whatif-kpi-chart"></canvas>
+  </div>
+  <div class="grid kpis">
+    <article class="card kpi"><p class="label">Before avg delay</p><p class="value">{{ before.avg_hold }} min</p></article>
+    {% if after %}
+    <article class="card kpi"><p class="label">After avg delay</p><p class="value">{{ after.avg_hold }} min</p></article>
+    <article class="card kpi"><p class="label">Before utilization</p><p class="value">{{ before.utilization_pct }}%</p></article>
+    <article class="card kpi"><p class="label">After utilization</p><p class="value">{{ after.utilization_pct }}%</p></article>
+    {% endif %}
+  </div>
+</section>
+
+{% if preview %}
+<section class="panel">
+  <header class="panel-head">
+    <h3>Preview plan</h3>
+    <p class="muted">Does not commit to live state — snapshot only.</p>
+  </header>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Train</th>
+          <th>Section</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Recommended entry</th>
+          <th>Recommended exit</th>
+          <th>Hold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview %}
+        <tr>
+          <td><span class="pill">{{ row.code }}</span> {{ row.name }}</td>
+          <td>{{ row.section }}</td>
+          <td>{{ row.category }}</td>
+          <td>{{ row.priority }}</td>
+          <td>{{ row.recommended_entry }}</td>
+          <td>{{ row.recommended_exit }}</td>
+          <td>{% if row.hold_min %}{{ row.hold_min }} min{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <ol class="explain">
+    {% for line in preview_expl %}
+    <li>{{ line }}</li>
+    {% else %}
+    <li>No new holds detected in preview.</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+<section class="panel muted-block">
+  <h3>Current live reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Train</th>
+          <th>Section</th>
+          <th>Entry (effective)</th>
+          <th>Recommended entry</th>
+          <th>Hold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in trains %}
+        <tr>
+          <td><span class="pill">{{ row.code }}</span></td>
+          <td>{{ row.section }}</td>
+          <td>{{ row.entry_effective }}</td>
+          <td>{{ row.recommended_entry }}</td>
+          <td>{% if row.hold_min %}{{ row.hold_min }} min{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+  const beforeData = {{ before|tojson }};
+  const afterData = {{ after|tojson if after else 'null' }};
+  if (window.Chart && beforeData && afterData) {
+    new Chart(document.getElementById('whatif-kpi-chart'), {
+      type: 'bar',
+      data: {
+        labels: ['Avg Delay', 'Throughput', 'Utilization', 'Conflicts Prevented'],
+        datasets: [
+          { label: 'Before', data: [beforeData.avg_hold, beforeData.throughput, beforeData.utilization_pct, beforeData.conflicts_prevented], backgroundColor: '#8fb3d9' },
+          { label: 'After', data: [afterData.avg_hold, afterData.throughput, afterData.utilization_pct, afterData.conflicts_prevented], backgroundColor: '#0b4f8c' }
+        ]
+      }
+    });
+  }
+</script>
+{% endblock %}
