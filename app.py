@@ -37,8 +37,10 @@ class Train:
     zone: str = ""
     state: str = ""
     avg_speed_kmph: int = 60
+    avg_speed_kmph: int = 60
     delay_probability: float = 0.15
     stops: list[str] | None = None
+    schedule: list[dict[str, Any]] | None = None
 
     def entry_effective(self) -> datetime:
         """Calculates actual entry time by adding delay to the planned entry."""
@@ -160,6 +162,7 @@ def _serialize_train(t: Train, rec_entry: datetime | None = None, rec_exit: date
             if decision == "PROCEED"
             else f"Hold at control point for {hold_min} min, then dispatch."
         ),
+        "schedule": getattr(t, "schedule", None),
     }
 
 
@@ -232,47 +235,120 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
     # Sorting logic: Section ID first, then highest priority, then earliest effective entry
     ordered = sorted(planning_trains, key=lambda x: (x.section, -x.priority, x.entry_effective()))
     explanations: list[str] = []
+    
+    # Track segment timeline: segment_id -> list of (start_time, end_time, train_priority, train_code)
+    segment_occupancy: dict[str, list[tuple[datetime, datetime, int, str]]] = {}
     timeline_end_by_section: dict[str, datetime] = {}
     platform_occupancy: dict[str, list[tuple[datetime, datetime, int]]] = {}
     results: list[dict[str, Any]] = []
 
     for t in ordered:
-        start = t.entry_effective()
+        route_meta = _route_meta(t.section)
         rule = STATE["section_rules"].get(t.section, {"headway_min": 3, "platform_capacity": 2})
         headway_min = int(rule["headway_min"])
         platform_capacity = int(rule["platform_capacity"])
-        last_end = timeline_end_by_section.get(t.section)
-
-        # Check for headway conflicts (minimum distance between trains)
-        if last_end is not None and start < (last_end + timedelta(minutes=headway_min)):
-            blocked_until = last_end + timedelta(minutes=headway_min)
-            hold = int((blocked_until - start).total_seconds() // 60)
-            start = blocked_until
-            explanations.append(
-                f"Train {t.code} held {hold} min to clear express route in {t.section}."
-            )
-
-        # Check for platform availability within the section
-        if t.platform_need > 0:
-            while True:
-                end = start + timedelta(minutes=t.section_run_min)
-                active_platforms = 0
-                for p_start, p_end, need in platform_occupancy.get(t.section, []):
-                    if p_start < end and p_end > start:
-                        active_platforms += need
-                if active_platforms + t.platform_need <= platform_capacity:
-                    break
-                start += timedelta(minutes=1)
-            platform_hold = int((start - t.entry_effective()).total_seconds() // 60)
-            if platform_hold > 0:
+        
+        start = t.entry_effective()
+        t.schedule = []
+        
+        if route_meta and "segments" in route_meta:
+            current_time = start
+            for seg in route_meta["segments"]:
+                seg_id = f"{t.section}_{seg['from']}_{seg['to']}"
+                km = float(seg["km"])
+                # calculate run_min based on avg_speed_kmph
+                run_min = max(2, int((km / t.avg_speed_kmph) * 60))
+                
+                occupancy = segment_occupancy.setdefault(seg_id, [])
+                
+                # Check for conflicts on this pin-to-pin segment
+                while True:
+                    conflict = False
+                    for occ_start, occ_end, occ_pri, occ_code in occupancy:
+                        # Headway: must be headway_min clear of any existing train
+                        # This avoids rear-end collisions and allows safe braking distance
+                        if not (current_time + timedelta(minutes=run_min) + timedelta(minutes=headway_min) <= occ_start or 
+                                current_time >= occ_end + timedelta(minutes=headway_min)):
+                            conflict = True
+                            wait_until = occ_end + timedelta(minutes=headway_min)
+                            if wait_until > current_time:
+                                hold_time = int((wait_until - current_time).total_seconds() / 60)
+                                if hold_time > 0:
+                                    explanations.append(f"Train {t.code} held {hold_time} min at {seg['from']} siding to give way to higher priority {occ_code} ({occ_pri}).")
+                                    current_time = wait_until
+                            break
+                    if not conflict:
+                        break
+                
+                end_time = current_time + timedelta(minutes=run_min)
+                occupancy.append((current_time, end_time, t.priority, t.code))
+                
+                t.schedule.append({
+                    "from": seg["from"],
+                    "to": seg["to"],
+                    "km": km,
+                    "start": current_time.strftime("%H:%M:%S"),
+                    "end": end_time.strftime("%H:%M:%S"),
+                    "start_dt": current_time.isoformat(),
+                    "end_dt": end_time.isoformat(),
+                    "speed": t.avg_speed_kmph,
+                    "run_min": run_min,
+                    "signal": "GREEN"
+                })
+                current_time = end_time
+            
+            end = current_time
+            t.section_run_min = int((end - start).total_seconds() / 60)
+            
+            # Simple platform check at destination
+            if t.platform_need > 0:
+                platform_occupancy.setdefault(t.section, []).append((start, end, t.platform_need))
+                
+        else:
+            # Fallback for routes without segments
+            last_end = timeline_end_by_section.get(t.section)
+            if last_end is not None and start < (last_end + timedelta(minutes=headway_min)):
+                blocked_until = last_end + timedelta(minutes=headway_min)
+                hold = int((blocked_until - start).total_seconds() // 60)
+                start = blocked_until
                 explanations.append(
-                    f"Platform reassigned for {t.code}; delayed to reduce congestion in {t.section}."
+                    f"Train {t.code} held {hold} min to clear express route in {t.section}."
                 )
 
-        end = start + timedelta(minutes=t.section_run_min)
-        timeline_end_by_section[t.section] = end
-        if t.platform_need > 0:
-            platform_occupancy.setdefault(t.section, []).append((start, end, t.platform_need))
+            if t.platform_need > 0:
+                while True:
+                    end = start + timedelta(minutes=t.section_run_min)
+                    active_platforms = 0
+                    for p_start, p_end, need in platform_occupancy.get(t.section, []):
+                        if p_start < end and p_end > start:
+                            active_platforms += need
+                    if active_platforms + t.platform_need <= platform_capacity:
+                        break
+                    start += timedelta(minutes=1)
+                platform_hold = int((start - t.entry_effective()).total_seconds() // 60)
+                if platform_hold > 0:
+                    explanations.append(
+                        f"Platform reassigned for {t.code}; delayed to reduce congestion in {t.section}."
+                    )
+
+            end = start + timedelta(minutes=t.section_run_min)
+            timeline_end_by_section[t.section] = end
+            if t.platform_need > 0:
+                platform_occupancy.setdefault(t.section, []).append((start, end, t.platform_need))
+            
+            t.schedule = [{
+                "from": t.source,
+                "to": t.destination,
+                "km": 0,
+                "start": start.strftime("%H:%M:%S"),
+                "end": end.strftime("%H:%M:%S"),
+                "start_dt": start.isoformat(),
+                "end_dt": end.isoformat(),
+                "speed": t.avg_speed_kmph,
+                "run_min": t.section_run_min,
+                "signal": "GREEN"
+            }]
+
         row = _serialize_train(t, start, end)
         if t.code in rerouted:
             from_section, to_section = rerouted[t.code]
@@ -706,38 +782,96 @@ def audit_export():
 @app.route("/api/live-map")
 def api_live_map():
     """API endpoint providing coordinates for live train tracking on the dashboard map."""
-    rows, _ = optimize_plan(STATE["trains"])
+    rows = STATE["last_plan"]  # Use the calculated plan
     station_lookup = {s["name"]: s for s in STATE["network"].get("stations", [])}
-    now_tick = datetime.now().minute + datetime.now().second / 60
+    now = datetime.now()
     train_points = []
     route_load: dict[str, int] = {}
+    
     for r in rows:
-        src = station_lookup.get(r["source"])
-        dst = station_lookup.get(r["destination"])
-        if not src or not dst:
-            continue
-        progress = ((now_tick + int(r["code"][-2:])) % 60) / 60
-        x = src["x"] + (dst["x"] - src["x"]) * progress
-        y = src["y"] + (dst["y"] - src["y"]) * progress
         route_load[r["section"]] = route_load.get(r["section"], 0) + 1
-        train_points.append(
-            {
-                "code": r["code"],
-                "x": x,
-                "y": y,
-                "section": r["section"],
-                "decision": r["decision"],
-            }
-        )
+        
+        schedule = r.get("schedule")
+        if not schedule:
+            continue
+            
+        current_segment = None
+        # Determine the current segment based on time
+        for seg in schedule:
+            start_dt = datetime.fromisoformat(seg["start_dt"])
+            end_dt = datetime.fromisoformat(seg["end_dt"])
+            if start_dt <= now <= end_dt:
+                current_segment = seg
+                break
+        
+        if current_segment:
+            start_dt = datetime.fromisoformat(current_segment["start_dt"])
+            end_dt = datetime.fromisoformat(current_segment["end_dt"])
+            src = station_lookup.get(current_segment["from"])
+            dst = station_lookup.get(current_segment["to"])
+            
+            if src and dst:
+                total_seconds = (end_dt - start_dt).total_seconds()
+                elapsed = (now - start_dt).total_seconds()
+                progress = elapsed / total_seconds if total_seconds > 0 else 1.0
+                
+                x = src["x"] + (dst["x"] - src["x"]) * progress
+                y = src["y"] + (dst["y"] - src["y"]) * progress
+                
+                train_points.append(
+                    {
+                        "code": r["code"],
+                        "name": r["name"],
+                        "category": r["category"],
+                        "priority": r["priority"],
+                        "x": x,
+                        "y": y,
+                        "section": r["section"],
+                        "decision": "PROCEED",
+                        "current_segment": current_segment,
+                    }
+                )
+        else:
+            first_seg = schedule[0]
+            last_seg = schedule[-1]
+            if now < datetime.fromisoformat(first_seg["start_dt"]):
+                src = station_lookup.get(first_seg["from"])
+                if src:
+                    train_points.append({
+                        "code": r["code"],
+                        "name": r["name"],
+                        "category": r["category"],
+                        "priority": r["priority"],
+                        "x": src["x"],
+                        "y": src["y"],
+                        "section": r["section"],
+                        "decision": "HOLD",
+                        "current_segment": first_seg,
+                    })
+            elif now > datetime.fromisoformat(last_seg["end_dt"]):
+                dst = station_lookup.get(last_seg["to"])
+                if dst:
+                    train_points.append({
+                        "code": r["code"],
+                        "name": r["name"],
+                        "category": r["category"],
+                        "priority": r["priority"],
+                        "x": dst["x"],
+                        "y": dst["y"],
+                        "section": r["section"],
+                        "decision": "FINISHED",
+                        "current_segment": last_seg,
+                    })
+
     conflicts = [k for k, v in route_load.items() if v > 18]
     return jsonify(
         {
-            "stations": STATE["network"].get("stations", []),
+            "stations": list(station_lookup.values()),
             "routes": STATE["network"].get("routes", []),
             "trains": train_points,
             "occupied": list(route_load.keys()),
             "conflicts": conflicts,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": now.isoformat(),
         }
     )
 

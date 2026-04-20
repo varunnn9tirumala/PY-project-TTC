@@ -14,17 +14,33 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const blink = (Date.now() / 500) % 2 < 1;
     live.routes.forEach((route) => {
-      const a = live.stations.find((s) => s.name === route.from);
-      const b = live.stations.find((s) => s.name === route.to);
-      if (!a || !b) return;
       const occupied = live.occupied.includes(route.id);
       const conflicted = live.conflicts.includes(route.id);
       ctx.strokeStyle = conflicted && blink ? "#ff2e2e" : occupied ? "#f08a24" : "#9ab2cd";
       ctx.lineWidth = conflicted ? 4 : 2;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
+      
+      if (route.segments && route.segments.length > 0) {
+        ctx.beginPath();
+        const startStation = live.stations.find((s) => s.name === route.segments[0].from);
+        if (startStation) {
+          ctx.moveTo(startStation.x, startStation.y);
+          route.segments.forEach(seg => {
+            const toStation = live.stations.find((s) => s.name === seg.to);
+            if (toStation) {
+              ctx.lineTo(toStation.x, toStation.y);
+            }
+          });
+          ctx.stroke();
+        }
+      } else {
+        const a = live.stations.find((s) => s.name === route.from);
+        const b = live.stations.find((s) => s.name === route.to);
+        if (!a || !b) return;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
     });
 
     live.stations.forEach((s) => {

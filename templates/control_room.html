@@ -25,16 +25,42 @@
       <thead>
         <tr><th>Train</th><th>Zone</th><th>Section</th><th>Decision</th><th>Reroute</th><th>Reason</th></tr>
       </thead>
-      <tbody>
         {% for row in trains %}
         <tr>
-          <td><span class="pill">{{ row.code }}</span> {{ row.name }}</td>
+          <td><span class="pill">{{ row.code }}</span> {{ row.name }}<br><small class="muted" style="font-size: 0.8em">Priority: {{ row.priority }} | {{ row.category }}</small></td>
           <td>{{ row.zone }}</td>
           <td>{{ row.section }}</td>
           <td><span class="decision {% if row.decision == 'PROCEED' %}ok{% else %}warn{% endif %}">{{ row.decision }}</span></td>
           <td>{% if row.rerouted_to %}<span class="tag">{{ row.rerouted_to }}</span>{% else %}—{% endif %}</td>
           <td>{{ row.action_note }}</td>
         </tr>
+        {% if row.schedule and row.schedule|length > 1 %}
+        <tr class="schedule-row">
+          <td colspan="6" style="padding: 0 1rem 1rem 1rem;">
+            <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px;">
+              <h4 style="margin-top: 0; font-size: 0.9em; color: var(--text-color);">Pin-to-Pin Schedule & AI Directives</h4>
+              <table class="schedule-table" style="width: 100%; font-size: 0.85em; margin: 0; background: transparent;">
+                <thead>
+                  <tr><th>Segment</th><th>Dist (km)</th><th>Run Time</th><th>Target Speed</th><th>Start</th><th>End</th><th>AI Signal</th></tr>
+                </thead>
+                <tbody>
+                  {% for seg in row.schedule %}
+                  <tr>
+                    <td>{{ seg.from }} &rarr; {{ seg.to }}</td>
+                    <td>{{ seg.km }} km</td>
+                    <td>{{ seg.run_min }} min</td>
+                    <td>{{ seg.speed }} km/h</td>
+                    <td>{{ seg.start }}</td>
+                    <td>{{ seg.end }}</td>
+                    <td><span class="decision ok" style="padding: 2px 6px; font-size: 0.8em">{{ seg.signal }}</span></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
         {% endfor %}
       </tbody>
     </table>
