@@ -1,49 +1,878 @@
 {
-  "zones": ["NR", "NCR", "NWR", "NER", "NFR", "ER", "ECR", "ECoR", "SER", "SECR", "WR", "WCR", "CR", "SCR", "SR", "SWR", "KR", "MRVC"],
+  "zones": [
+    "NR",
+    "NCR",
+    "NWR",
+    "NER",
+    "NFR",
+    "ER",
+    "ECR",
+    "ECoR",
+    "SER",
+    "SECR",
+    "WR",
+    "WCR",
+    "CR",
+    "SCR",
+    "SR",
+    "SWR",
+    "KR",
+    "MRVC"
+  ],
   "stations": [
-    {"name":"New Delhi Railway Station","state":"Delhi","zone":"NR","x":180,"y":120,"code":"NDLS"},
-    {"name":"Howrah Junction","state":"West Bengal","zone":"ER","x":540,"y":220,"code":"HWH"},
-    {"name":"Mumbai Central","state":"Maharashtra","zone":"WR","x":180,"y":320,"code":"MCT"},
-    {"name":"Chennai Central","state":"Tamil Nadu","zone":"SR","x":430,"y":430,"code":"MAS"},
-    {"name":"Secunderabad Junction","state":"Telangana","zone":"SCR","x":340,"y":340,"code":"SC"},
-    {"name":"Kazipet Junction","state":"Telangana","zone":"SCR","x":360,"y":345,"code":"KZJ"},
-    {"name":"Warangal","state":"Telangana","zone":"SCR","x":365,"y":348,"code":"WL"},
-    {"name":"Mahbubabad","state":"Telangana","zone":"SCR","x":375,"y":352,"code":"MABD"},
-    {"name":"Khammam","state":"Telangana","zone":"SCR","x":382,"y":355,"code":"KMT"},
-    {"name":"Vijayawada Junction","state":"Andhra Pradesh","zone":"SCR","x":390,"y":360,"code":"BZA"},
-    {"name":"Visakhapatnam Railway Station","state":"Andhra Pradesh","zone":"ECoR","x":470,"y":320,"code":"VSKP"},
-    {"name":"Ahmedabad Junction","state":"Gujarat","zone":"WR","x":140,"y":280,"code":"ADI"},
-    {"name":"Jaipur Junction","state":"Rajasthan","zone":"NWR","x":180,"y":170,"code":"JP"},
-    {"name":"Lucknow Junction","state":"Uttar Pradesh","zone":"NR","x":280,"y":160,"code":"LKO"},
-    {"name":"Patna Junction","state":"Bihar","zone":"ECR","x":430,"y":190,"code":"PNBE"},
-    {"name":"Bhubaneswar","state":"Odisha","zone":"ECoR","x":500,"y":280,"code":"BBS"},
-    {"name":"Nagpur","state":"Maharashtra","zone":"CR","x":300,"y":300,"code":"NGP"},
-    {"name":"Pune Junction","state":"Maharashtra","zone":"CR","x":220,"y":350,"code":"PUNE"},
-    {"name":"Bengaluru City","state":"Karnataka","zone":"SWR","x":360,"y":450,"code":"SBC"},
-    {"name":"Thiruvananthapuram","state":"Kerala","zone":"SR","x":330,"y":520,"code":"TVC"},
-    {"name":"Guwahati","state":"Assam","zone":"NFR","x":670,"y":140,"code":"GHY"},
-    {"name":"Ranchi","state":"Jharkhand","zone":"SER","x":470,"y":240,"code":"RNC"},
-    {"name":"Bhopal","state":"Madhya Pradesh","zone":"WCR","x":240,"y":250,"code":"BPL"},
-    {"name":"Chandigarh","state":"Punjab","zone":"NR","x":190,"y":90,"code":"CDG"}
+    {
+      "name": "New Delhi Railway Station",
+      "state": "Delhi",
+      "zone": "NR",
+      "x": 180,
+      "y": 120,
+      "code": "NDLS"
+    },
+    {
+      "name": "Howrah Junction",
+      "state": "West Bengal",
+      "zone": "ER",
+      "x": 540,
+      "y": 220,
+      "code": "HWH"
+    },
+    {
+      "name": "Mumbai Central",
+      "state": "Maharashtra",
+      "zone": "WR",
+      "x": 180,
+      "y": 320,
+      "code": "MCT"
+    },
+    {
+      "name": "Chennai Central",
+      "state": "Tamil Nadu",
+      "zone": "SR",
+      "x": 430,
+      "y": 430,
+      "code": "MAS"
+    },
+    {
+      "name": "Secunderabad Junction",
+      "state": "Telangana",
+      "zone": "SCR",
+      "x": 340,
+      "y": 340,
+      "code": "SC"
+    },
+    {
+      "name": "Kazipet Junction",
+      "state": "Telangana",
+      "zone": "SCR",
+      "x": 360,
+      "y": 345,
+      "code": "KZJ"
+    },
+    {
+      "name": "Warangal",
+      "state": "Telangana",
+      "zone": "SCR",
+      "x": 365,
+      "y": 348,
+      "code": "WL"
+    },
+    {
+      "name": "Mahbubabad",
+      "state": "Telangana",
+      "zone": "SCR",
+      "x": 375,
+      "y": 352,
+      "code": "MABD"
+    },
+    {
+      "name": "Khammam",
+      "state": "Telangana",
+      "zone": "SCR",
+      "x": 382,
+      "y": 355,
+      "code": "KMT"
+    },
+    {
+      "name": "Vijayawada Junction",
+      "state": "Andhra Pradesh",
+      "zone": "SCR",
+      "x": 390,
+      "y": 360,
+      "code": "BZA"
+    },
+    {
+      "name": "Visakhapatnam Railway Station",
+      "state": "Andhra Pradesh",
+      "zone": "ECoR",
+      "x": 470,
+      "y": 320,
+      "code": "VSKP"
+    },
+    {
+      "name": "Ahmedabad Junction",
+      "state": "Gujarat",
+      "zone": "WR",
+      "x": 140,
+      "y": 280,
+      "code": "ADI"
+    },
+    {
+      "name": "Jaipur Junction",
+      "state": "Rajasthan",
+      "zone": "NWR",
+      "x": 180,
+      "y": 170,
+      "code": "JP"
+    },
+    {
+      "name": "Lucknow Junction",
+      "state": "Uttar Pradesh",
+      "zone": "NR",
+      "x": 280,
+      "y": 160,
+      "code": "LKO"
+    },
+    {
+      "name": "Patna Junction",
+      "state": "Bihar",
+      "zone": "ECR",
+      "x": 430,
+      "y": 190,
+      "code": "PNBE"
+    },
+    {
+      "name": "Bhubaneswar",
+      "state": "Odisha",
+      "zone": "ECoR",
+      "x": 500,
+      "y": 280,
+      "code": "BBS"
+    },
+    {
+      "name": "Nagpur",
+      "state": "Maharashtra",
+      "zone": "CR",
+      "x": 300,
+      "y": 300,
+      "code": "NGP"
+    },
+    {
+      "name": "Pune Junction",
+      "state": "Maharashtra",
+      "zone": "CR",
+      "x": 220,
+      "y": 350,
+      "code": "PUNE"
+    },
+    {
+      "name": "Bengaluru City",
+      "state": "Karnataka",
+      "zone": "SWR",
+      "x": 360,
+      "y": 450,
+      "code": "SBC"
+    },
+    {
+      "name": "Thiruvananthapuram",
+      "state": "Kerala",
+      "zone": "SR",
+      "x": 330,
+      "y": 520,
+      "code": "TVC"
+    },
+    {
+      "name": "Guwahati",
+      "state": "Assam",
+      "zone": "NFR",
+      "x": 670,
+      "y": 140,
+      "code": "GHY"
+    },
+    {
+      "name": "Ranchi",
+      "state": "Jharkhand",
+      "zone": "SER",
+      "x": 470,
+      "y": 240,
+      "code": "RNC"
+    },
+    {
+      "name": "Bhopal",
+      "state": "Madhya Pradesh",
+      "zone": "WCR",
+      "x": 240,
+      "y": 250,
+      "code": "BPL"
+    },
+    {
+      "name": "Chandigarh",
+      "state": "Punjab",
+      "zone": "NR",
+      "x": 190,
+      "y": 90,
+      "code": "CDG"
+    },
+    {
+      "name": "Kanpur",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 270,
+      "y": 145,
+      "code": "KANP"
+    },
+    {
+      "name": "Prayagraj",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 360,
+      "y": 170,
+      "code": "PRAY"
+    },
+    {
+      "name": "Patna",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 450,
+      "y": 195,
+      "code": "PATN"
+    },
+    {
+      "name": "Kota",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 180,
+      "y": 186,
+      "code": "KOTA"
+    },
+    {
+      "name": "Vadodara",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 180,
+      "y": 253,
+      "code": "VADO"
+    },
+    {
+      "name": "Pune",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 263,
+      "y": 356,
+      "code": "PUNE"
+    },
+    {
+      "name": "Guntakal",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 346,
+      "y": 393,
+      "code": "GUNT"
+    },
+    {
+      "name": "Rajahmundry",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 430,
+      "y": 340,
+      "code": "RAJA"
+    },
+    {
+      "name": "Balharshah",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 320,
+      "y": 320,
+      "code": "BALH"
+    },
+    {
+      "name": "Katpadi",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 395,
+      "y": 440,
+      "code": "KATP"
+    },
+    {
+      "name": "Kochi",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 345,
+      "y": 485,
+      "code": "KOCH"
+    },
+    {
+      "name": "Ghaziabad",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 230,
+      "y": 140,
+      "code": "GHAZ"
+    },
+    {
+      "name": "Varanasi",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 355,
+      "y": 175,
+      "code": "VARA"
+    },
+    {
+      "name": "Kharagpur",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 520,
+      "y": 250,
+      "code": "KHAR"
+    },
+    {
+      "name": "Brahmapur",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 485,
+      "y": 300,
+      "code": "BRAH"
+    },
+    {
+      "name": "Ajmer",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 160,
+      "y": 225,
+      "code": "AJME"
+    },
+    {
+      "name": "Jhansi",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 210,
+      "y": 185,
+      "code": "JHAN"
+    },
+    {
+      "name": "Tatanagar",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 505,
+      "y": 230,
+      "code": "TATA"
+    },
+    {
+      "name": "Ambala",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 185,
+      "y": 105,
+      "code": "AMBA"
+    },
+    {
+      "name": "Katihar",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 550,
+      "y": 165,
+      "code": "KATI"
+    },
+    {
+      "name": "Solapur",
+      "state": "Unknown",
+      "zone": "UNK",
+      "x": 280,
+      "y": 345,
+      "code": "SOLA"
+    }
   ],
   "routes": [
-    {"id":"NDLS-HWH","from":"New Delhi Railway Station","to":"Howrah Junction","zone":"NR","state":"Delhi","run_min":28,"headway_min":3,"platform_capacity":3,"stops":["Kanpur","Prayagraj","Patna"]},
-    {"id":"NDLS-MCT","from":"New Delhi Railway Station","to":"Mumbai Central","zone":"WR","state":"Delhi","run_min":30,"headway_min":4,"platform_capacity":3,"stops":["Kota","Vadodara"]},
-    {"id":"MCT-MAS","from":"Mumbai Central","to":"Chennai Central","zone":"CR","state":"Maharashtra","run_min":34,"headway_min":4,"platform_capacity":2,"stops":["Pune","Guntakal"]},
-    {"id":"SC-BZA","from":"Secunderabad Junction","to":"Vijayawada Junction","zone":"SCR","state":"Telangana","run_min":300,"headway_min":3,"platform_capacity":3,"stops":["Kazipet Junction","Warangal","Mahbubabad","Khammam"],"segments":[{"from":"Secunderabad Junction","to":"Kazipet Junction","km":132},{"from":"Kazipet Junction","to":"Warangal","km":10},{"from":"Warangal","to":"Mahbubabad","km":84},{"from":"Mahbubabad","to":"Khammam","km":47},{"from":"Khammam","to":"Vijayawada Junction","km":99}]},
-    {"id":"BZA-VSKP","from":"Vijayawada Junction","to":"Visakhapatnam Railway Station","zone":"ECoR","state":"Andhra Pradesh","run_min":26,"headway_min":3,"platform_capacity":2,"stops":["Rajahmundry"]},
-    {"id":"SC-NGP","from":"Secunderabad Junction","to":"Nagpur","zone":"SCR","state":"Telangana","run_min":24,"headway_min":3,"platform_capacity":2,"stops":["Balharshah"]},
-    {"id":"MAS-SBC","from":"Chennai Central","to":"Bengaluru City","zone":"SR","state":"Tamil Nadu","run_min":18,"headway_min":3,"platform_capacity":3,"stops":["Katpadi"]},
-    {"id":"SBC-TVC","from":"Bengaluru City","to":"Thiruvananthapuram","zone":"SR","state":"Karnataka","run_min":25,"headway_min":3,"platform_capacity":2,"stops":["Kochi"]},
-    {"id":"NDLS-LKO","from":"New Delhi Railway Station","to":"Lucknow Junction","zone":"NR","state":"Delhi","run_min":19,"headway_min":3,"platform_capacity":3,"stops":["Ghaziabad"]},
-    {"id":"LKO-PNBE","from":"Lucknow Junction","to":"Patna Junction","zone":"ECR","state":"Uttar Pradesh","run_min":22,"headway_min":3,"platform_capacity":2,"stops":["Varanasi"]},
-    {"id":"HWH-BBS","from":"Howrah Junction","to":"Bhubaneswar","zone":"SER","state":"West Bengal","run_min":21,"headway_min":3,"platform_capacity":2,"stops":["Kharagpur"]},
-    {"id":"BBS-VSKP","from":"Bhubaneswar","to":"Visakhapatnam Railway Station","zone":"ECoR","state":"Odisha","run_min":20,"headway_min":3,"platform_capacity":2,"stops":["Brahmapur"]},
-    {"id":"ADI-JP","from":"Ahmedabad Junction","to":"Jaipur Junction","zone":"NWR","state":"Gujarat","run_min":24,"headway_min":4,"platform_capacity":2,"stops":["Ajmer"]},
-    {"id":"BPL-NDLS","from":"Bhopal","to":"New Delhi Railway Station","zone":"WCR","state":"Madhya Pradesh","run_min":23,"headway_min":3,"platform_capacity":2,"stops":["Jhansi"]},
-    {"id":"RNC-HWH","from":"Ranchi","to":"Howrah Junction","zone":"SER","state":"Jharkhand","run_min":18,"headway_min":3,"platform_capacity":2,"stops":["Tatanagar"]},
-    {"id":"NDLS-CDG","from":"New Delhi Railway Station","to":"Chandigarh","zone":"NR","state":"Delhi","run_min":16,"headway_min":3,"platform_capacity":3,"stops":["Ambala"]},
-    {"id":"PNBE-GHY","from":"Patna Junction","to":"Guwahati","zone":"NFR","state":"Bihar","run_min":33,"headway_min":4,"platform_capacity":2,"stops":["Katihar"]},
-    {"id":"PUNE-SC","from":"Pune Junction","to":"Secunderabad Junction","zone":"CR","state":"Maharashtra","run_min":27,"headway_min":4,"platform_capacity":2,"stops":["Solapur"]}
+    {
+      "id": "NDLS-HWH",
+      "from": "New Delhi Railway Station",
+      "to": "Howrah Junction",
+      "zone": "NR",
+      "state": "Delhi",
+      "run_min": 1120,
+      "headway_min": 3,
+      "platform_capacity": 3,
+      "stops": [
+        "Kanpur",
+        "Prayagraj",
+        "Patna"
+      ],
+      "segments": [
+        {
+          "from": "New Delhi Railway Station",
+          "to": "Kanpur",
+          "km": 280
+        },
+        {
+          "from": "Kanpur",
+          "to": "Prayagraj",
+          "km": 280
+        },
+        {
+          "from": "Prayagraj",
+          "to": "Patna",
+          "km": 280
+        },
+        {
+          "from": "Patna",
+          "to": "Howrah Junction",
+          "km": 280
+        }
+      ]
+    },
+    {
+      "id": "NDLS-MCT",
+      "from": "New Delhi Railway Station",
+      "to": "Mumbai Central",
+      "zone": "WR",
+      "state": "Delhi",
+      "run_min": 600,
+      "headway_min": 4,
+      "platform_capacity": 3,
+      "stops": [
+        "Kota",
+        "Vadodara"
+      ],
+      "segments": [
+        {
+          "from": "New Delhi Railway Station",
+          "to": "Kota",
+          "km": 198
+        },
+        {
+          "from": "Kota",
+          "to": "Vadodara",
+          "km": 201
+        },
+        {
+          "from": "Vadodara",
+          "to": "Mumbai Central",
+          "km": 201
+        }
+      ]
+    },
+    {
+      "id": "MCT-MAS",
+      "from": "Mumbai Central",
+      "to": "Chennai Central",
+      "zone": "CR",
+      "state": "Maharashtra",
+      "run_min": 818,
+      "headway_min": 4,
+      "platform_capacity": 2,
+      "stops": [
+        "Pune",
+        "Guntakal"
+      ],
+      "segments": [
+        {
+          "from": "Mumbai Central",
+          "to": "Pune",
+          "km": 271
+        },
+        {
+          "from": "Pune",
+          "to": "Guntakal",
+          "km": 272
+        },
+        {
+          "from": "Guntakal",
+          "to": "Chennai Central",
+          "km": 275
+        }
+      ]
+    },
+    {
+      "id": "SC-BZA",
+      "from": "Secunderabad Junction",
+      "to": "Vijayawada Junction",
+      "zone": "SCR",
+      "state": "Telangana",
+      "run_min": 300,
+      "headway_min": 3,
+      "platform_capacity": 3,
+      "stops": [
+        "Kazipet Junction",
+        "Warangal",
+        "Mahbubabad",
+        "Khammam"
+      ],
+      "segments": [
+        {
+          "from": "Secunderabad Junction",
+          "to": "Kazipet Junction",
+          "km": 132
+        },
+        {
+          "from": "Kazipet Junction",
+          "to": "Warangal",
+          "km": 10
+        },
+        {
+          "from": "Warangal",
+          "to": "Mahbubabad",
+          "km": 84
+        },
+        {
+          "from": "Mahbubabad",
+          "to": "Khammam",
+          "km": 47
+        },
+        {
+          "from": "Khammam",
+          "to": "Vijayawada Junction",
+          "km": 99
+        }
+      ]
+    },
+    {
+      "id": "BZA-VSKP",
+      "from": "Vijayawada Junction",
+      "to": "Visakhapatnam Railway Station",
+      "zone": "ECoR",
+      "state": "Andhra Pradesh",
+      "run_min": 268,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Rajahmundry"
+      ],
+      "segments": [
+        {
+          "from": "Vijayawada Junction",
+          "to": "Rajahmundry",
+          "km": 134
+        },
+        {
+          "from": "Rajahmundry",
+          "to": "Visakhapatnam Railway Station",
+          "km": 134
+        }
+      ]
+    },
+    {
+      "id": "SC-NGP",
+      "from": "Secunderabad Junction",
+      "to": "Nagpur",
+      "zone": "SCR",
+      "state": "Telangana",
+      "run_min": 168,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Balharshah"
+      ],
+      "segments": [
+        {
+          "from": "Secunderabad Junction",
+          "to": "Balharshah",
+          "km": 84
+        },
+        {
+          "from": "Balharshah",
+          "to": "Nagpur",
+          "km": 84
+        }
+      ]
+    },
+    {
+      "id": "MAS-SBC",
+      "from": "Chennai Central",
+      "to": "Bengaluru City",
+      "zone": "SR",
+      "state": "Tamil Nadu",
+      "run_min": 218,
+      "headway_min": 3,
+      "platform_capacity": 3,
+      "stops": [
+        "Katpadi"
+      ],
+      "segments": [
+        {
+          "from": "Chennai Central",
+          "to": "Katpadi",
+          "km": 109
+        },
+        {
+          "from": "Katpadi",
+          "to": "Bengaluru City",
+          "km": 109
+        }
+      ]
+    },
+    {
+      "id": "SBC-TVC",
+      "from": "Bengaluru City",
+      "to": "Thiruvananthapuram",
+      "zone": "SR",
+      "state": "Karnataka",
+      "run_min": 228,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Kochi"
+      ],
+      "segments": [
+        {
+          "from": "Bengaluru City",
+          "to": "Kochi",
+          "km": 114
+        },
+        {
+          "from": "Kochi",
+          "to": "Thiruvananthapuram",
+          "km": 114
+        }
+      ]
+    },
+    {
+      "id": "NDLS-LKO",
+      "from": "New Delhi Railway Station",
+      "to": "Lucknow Junction",
+      "zone": "NR",
+      "state": "Delhi",
+      "run_min": 322,
+      "headway_min": 3,
+      "platform_capacity": 3,
+      "stops": [
+        "Ghaziabad"
+      ],
+      "segments": [
+        {
+          "from": "New Delhi Railway Station",
+          "to": "Ghaziabad",
+          "km": 161
+        },
+        {
+          "from": "Ghaziabad",
+          "to": "Lucknow Junction",
+          "km": 161
+        }
+      ]
+    },
+    {
+      "id": "LKO-PNBE",
+      "from": "Lucknow Junction",
+      "to": "Patna Junction",
+      "zone": "ECR",
+      "state": "Uttar Pradesh",
+      "run_min": 458,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Varanasi"
+      ],
+      "segments": [
+        {
+          "from": "Lucknow Junction",
+          "to": "Varanasi",
+          "km": 229
+        },
+        {
+          "from": "Varanasi",
+          "to": "Patna Junction",
+          "km": 229
+        }
+      ]
+    },
+    {
+      "id": "HWH-BBS",
+      "from": "Howrah Junction",
+      "to": "Bhubaneswar",
+      "zone": "SER",
+      "state": "West Bengal",
+      "run_min": 216,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Kharagpur"
+      ],
+      "segments": [
+        {
+          "from": "Howrah Junction",
+          "to": "Kharagpur",
+          "km": 108
+        },
+        {
+          "from": "Kharagpur",
+          "to": "Bhubaneswar",
+          "km": 108
+        }
+      ]
+    },
+    {
+      "id": "BBS-VSKP",
+      "from": "Bhubaneswar",
+      "to": "Visakhapatnam Railway Station",
+      "zone": "ECoR",
+      "state": "Odisha",
+      "run_min": 150,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Brahmapur"
+      ],
+      "segments": [
+        {
+          "from": "Bhubaneswar",
+          "to": "Brahmapur",
+          "km": 75
+        },
+        {
+          "from": "Brahmapur",
+          "to": "Visakhapatnam Railway Station",
+          "km": 75
+        }
+      ]
+    },
+    {
+      "id": "ADI-JP",
+      "from": "Ahmedabad Junction",
+      "to": "Jaipur Junction",
+      "zone": "NWR",
+      "state": "Gujarat",
+      "run_min": 350,
+      "headway_min": 4,
+      "platform_capacity": 2,
+      "stops": [
+        "Ajmer"
+      ],
+      "segments": [
+        {
+          "from": "Ahmedabad Junction",
+          "to": "Ajmer",
+          "km": 175
+        },
+        {
+          "from": "Ajmer",
+          "to": "Jaipur Junction",
+          "km": 175
+        }
+      ]
+    },
+    {
+      "id": "BPL-NDLS",
+      "from": "Bhopal",
+      "to": "New Delhi Railway Station",
+      "zone": "WCR",
+      "state": "Madhya Pradesh",
+      "run_min": 428,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Jhansi"
+      ],
+      "segments": [
+        {
+          "from": "Bhopal",
+          "to": "Jhansi",
+          "km": 214
+        },
+        {
+          "from": "Jhansi",
+          "to": "New Delhi Railway Station",
+          "km": 214
+        }
+      ]
+    },
+    {
+      "id": "RNC-HWH",
+      "from": "Ranchi",
+      "to": "Howrah Junction",
+      "zone": "SER",
+      "state": "Jharkhand",
+      "run_min": 218,
+      "headway_min": 3,
+      "platform_capacity": 2,
+      "stops": [
+        "Tatanagar"
+      ],
+      "segments": [
+        {
+          "from": "Ranchi",
+          "to": "Tatanagar",
+          "km": 109
+        },
+        {
+          "from": "Tatanagar",
+          "to": "Howrah Junction",
+          "km": 109
+        }
+      ]
+    },
+    {
+      "id": "NDLS-CDG",
+      "from": "New Delhi Railway Station",
+      "to": "Chandigarh",
+      "zone": "NR",
+      "state": "Delhi",
+      "run_min": 94,
+      "headway_min": 3,
+      "platform_capacity": 3,
+      "stops": [
+        "Ambala"
+      ],
+      "segments": [
+        {
+          "from": "New Delhi Railway Station",
+          "to": "Ambala",
+          "km": 47
+        },
+        {
+          "from": "Ambala",
+          "to": "Chandigarh",
+          "km": 47
+        }
+      ]
+    },
+    {
+      "id": "PNBE-GHY",
+      "from": "Patna Junction",
+      "to": "Guwahati",
+      "zone": "NFR",
+      "state": "Bihar",
+      "run_min": 734,
+      "headway_min": 4,
+      "platform_capacity": 2,
+      "stops": [
+        "Katihar"
+      ],
+      "segments": [
+        {
+          "from": "Patna Junction",
+          "to": "Katihar",
+          "km": 367
+        },
+        {
+          "from": "Katihar",
+          "to": "Guwahati",
+          "km": 367
+        }
+      ]
+    },
+    {
+      "id": "PUNE-SC",
+      "from": "Pune Junction",
+      "to": "Secunderabad Junction",
+      "zone": "CR",
+      "state": "Maharashtra",
+      "run_min": 360,
+      "headway_min": 4,
+      "platform_capacity": 2,
+      "stops": [
+        "Solapur"
+      ],
+      "segments": [
+        {
+          "from": "Pune Junction",
+          "to": "Solapur",
+          "km": 180
+        },
+        {
+          "from": "Solapur",
+          "to": "Secunderabad Junction",
+          "km": 180
+        }
+      ]
+    }
   ]
 }
