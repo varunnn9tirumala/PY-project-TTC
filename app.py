@@ -15,12 +15,14 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, redirect, render_template, request, url_for
 
-app = Flask(__name__)
+# Initialize Flask application
+app = Flask(__name__) 
 app.secret_key = "dev-section-controller-key"
 
 
 @dataclass
 class Train:
+    """Data class representing a train entity and its operational parameters."""
     code: str
     name: str
     section: str
@@ -39,18 +41,22 @@ class Train:
     stops: list[str] | None = None
 
     def entry_effective(self) -> datetime:
+        """Calculates actual entry time by adding delay to the planned entry."""
         return self.planned_entry + timedelta(minutes=self.delay_min)
 
 
+# Define path for static data storage (JSON/CSV files)
 DATA_DIR = Path(__file__).parent / "static" / "data"
 
 
 def _load_json(name: str) -> dict[str, Any]:
+    """Helper to load JSON data from the static data directory."""
     with (DATA_DIR / name).open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def _build_zone_rules(network: dict[str, Any]) -> dict[str, dict[str, int]]:
+    """Extracts headway and platform capacity rules for each route in the network."""
     rules: dict[str, dict[str, int]] = {}
     for route in network["routes"]:
         rules[route["id"]] = {
@@ -61,6 +67,7 @@ def _build_zone_rules(network: dict[str, Any]) -> dict[str, dict[str, int]]:
 
 
 def _seed_trains(now: datetime, network: dict[str, Any]) -> list[Train]:
+    """Generates initial dummy train data for the demo based on catalog templates."""
     base = now.replace(second=0, microsecond=0)
     routes = network["routes"]
     catalog = _load_json("train_catalog.json")["train_templates"]
@@ -95,6 +102,7 @@ def _seed_trains(now: datetime, network: dict[str, Any]) -> list[Train]:
     return seeded
 
 
+# Global In-Memory State to store application data during runtime
 STATE: dict[str, Any] = {
     "trains": [],
     "last_plan": [],
@@ -107,6 +115,7 @@ STATE: dict[str, Any] = {
 
 
 def _log(event: str, detail: str) -> None:
+    """Adds a timestamped entry to the audit log for tracking system actions."""
     STATE["audit"].insert(
         0,
         {
@@ -120,6 +129,7 @@ def _log(event: str, detail: str) -> None:
 
 
 def _serialize_train(t: Train, rec_entry: datetime | None = None, rec_exit: datetime | None = None) -> dict[str, Any]:
+    """Converts Train object to a dictionary for JSON/Frontend consumption."""
     entry = rec_entry or t.entry_effective()
     exit_ = rec_exit or (entry + timedelta(minutes=t.section_run_min))
     hold_min = max(0, int((entry - t.entry_effective()).total_seconds() // 60))
@@ -154,6 +164,7 @@ def _serialize_train(t: Train, rec_entry: datetime | None = None, rec_exit: date
 
 
 def _route_meta(section_id: str) -> dict[str, Any] | None:
+    """Fetches route configuration data for a specific section ID."""
     for route in STATE["network"].get("routes", []):
         if route["id"] == section_id:
             return route
@@ -161,6 +172,7 @@ def _route_meta(section_id: str) -> dict[str, Any] | None:
 
 
 def _suggest_alternative_route(train: Train, section_load: dict[str, int]) -> str | None:
+    """Suggests a lighter route based on current section load and compatibility."""
     current = _route_meta(train.section)
     if not current:
         return None
@@ -184,8 +196,10 @@ def _suggest_alternative_route(train: Train, section_load: dict[str, int]) -> st
 
 def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]:
     """
-    Single-track section: trains cannot overlap. Greedy ordering by (priority desc, entry time).
-    Later train in sequence is delayed if needed.
+    Main Scheduling Engine:
+    1. Reroutes low-priority trains if a section is congested.
+    2. Sorts trains by priority and entry time.
+    3. Resolves headway and platform conflicts using a greedy timeline approach.
     """
     planning_trains = copy.deepcopy(trains)
     section_load: dict[str, int] = {}
@@ -215,6 +229,7 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
                 t.state = alt_meta["state"]
                 t.section_run_min = int(alt_meta["run_min"])
 
+    # Sorting logic: Section ID first, then highest priority, then earliest effective entry
     ordered = sorted(planning_trains, key=lambda x: (x.section, -x.priority, x.entry_effective()))
     explanations: list[str] = []
     timeline_end_by_section: dict[str, datetime] = {}
@@ -228,6 +243,7 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
         platform_capacity = int(rule["platform_capacity"])
         last_end = timeline_end_by_section.get(t.section)
 
+        # Check for headway conflicts (minimum distance between trains)
         if last_end is not None and start < (last_end + timedelta(minutes=headway_min)):
             blocked_until = last_end + timedelta(minutes=headway_min)
             hold = int((blocked_until - start).total_seconds() // 60)
@@ -236,6 +252,7 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
                 f"Train {t.code} held {hold} min to clear express route in {t.section}."
             )
 
+        # Check for platform availability within the section
         if t.platform_need > 0:
             while True:
                 end = start + timedelta(minutes=t.section_run_min)
@@ -275,6 +292,7 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
 
 
 def init_state() -> None:
+    """Resets and initializes the application state from source files."""
     now = datetime.now()
     network = _load_json("india_network.json")
     STATE["network"] = network
@@ -291,6 +309,7 @@ def init_state() -> None:
 
 
 def _parse_csv_trains(file_content: str, now: datetime) -> list[Train]:
+    """Validates and parses uploaded CSV data into Train objects."""
     reader = csv.DictReader(io.StringIO(file_content))
     required = {
         "code",
@@ -339,12 +358,14 @@ def _parse_csv_trains(file_content: str, now: datetime) -> list[Train]:
 
 @app.before_request
 def ensure_state() -> None:
+    """Ensures state is initialized before any request is processed."""
     if not STATE["trains"]:
         init_state()
 
 
 @app.route("/")
 def dashboard():
+    """Main landing page displaying metrics, network map, and current plan."""
     rows, explanations = optimize_plan(STATE["trains"])
     STATE["last_plan"] = rows
     kpis = compute_kpis(rows)
@@ -372,6 +393,7 @@ def dashboard():
 
 @app.route("/control-room")
 def control_room():
+    """Operational view focusing on real-time train movements and dispatch instructions."""
     rows, explanations = optimize_plan(STATE["trains"])
     kpis = compute_kpis(rows)
     return render_template(
@@ -386,6 +408,7 @@ def control_room():
 
 @app.route("/what-if", methods=["GET", "POST"])
 def what_if():
+    """Simulation engine to test network resilience under various scenarios."""
     message = ""
     preview_rows: list[dict[str, Any]] | None = None
     preview_expl: list[str] | None = None
@@ -459,6 +482,7 @@ def what_if():
 
 @app.route("/override", methods=["GET", "POST"])
 def override():
+    """Manual controller interface to adjust train priorities dynamically."""
     message = ""
     if request.method == "POST":
         code = (request.form.get("train_code") or "").strip().upper()
@@ -487,12 +511,14 @@ def override():
 
 @app.route("/reoptimize", methods=["POST"])
 def reoptimize():
+    """Manual trigger to rerun the scheduling algorithm."""
     _log("REOPTIMIZE", "Controller triggered full section re-optimization.")
     return redirect(url_for("dashboard"))
 
 
 @app.route("/reset-demo", methods=["POST"])
 def reset_demo():
+    """Resets state to baseline demo data."""
     init_state()
     _log("RESET", "Demo data restored to baseline.")
     return redirect(url_for("dashboard"))
@@ -500,6 +526,7 @@ def reset_demo():
 
 @app.route("/upload-csv", methods=["POST"])
 def upload_csv():
+    """Handles bulk train data upload via CSV."""
     uploaded = request.files.get("train_csv")
     if not uploaded:
         _log("UPLOAD_FAIL", "CSV upload attempted without a file.")
@@ -515,6 +542,7 @@ def upload_csv():
 
 @app.route("/manage", methods=["GET", "POST"])
 def manage():
+    """Full CRUD interface for managing trains and network sections."""
     message = ""
     if request.method == "POST":
         action = (request.form.get("action") or "").strip()
@@ -644,6 +672,7 @@ def manage():
 
 @app.route("/audit")
 def audit():
+    """Displays the system audit trail with search and filter capabilities."""
     filtered = list(STATE["audit"])
     q = (request.args.get("q") or "").strip().lower()
     event_filter = (request.args.get("event") or "").strip().upper()
@@ -661,6 +690,7 @@ def audit():
 
 @app.route("/audit/export")
 def audit_export():
+    """Exports the audit log as a CSV file download."""
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["time", "event", "detail"])
@@ -675,6 +705,7 @@ def audit_export():
 
 @app.route("/api/live-map")
 def api_live_map():
+    """API endpoint providing coordinates for live train tracking on the dashboard map."""
     rows, _ = optimize_plan(STATE["trains"])
     station_lookup = {s["name"]: s for s in STATE["network"].get("stations", [])}
     now_tick = datetime.now().minute + datetime.now().second / 60
@@ -713,6 +744,7 @@ def api_live_map():
 
 @app.route("/api/analytics")
 def api_analytics():
+    """API endpoint providing historical performance data for frontend charts."""
     rows = STATE["history"][-20:]
     return jsonify(
         {
@@ -726,6 +758,7 @@ def api_analytics():
 
 
 def compute_kpis(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Calculates Key Performance Indicators (KPIs) like throughput and average hold time."""
     holds = [r["hold_min"] for r in rows]
     total_hold = sum(holds)
     avg_hold = round(sum(holds) / len(holds), 1) if holds else 0
@@ -748,5 +781,6 @@ def compute_kpis(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
+    # Entry point for the application
     init_state()
     app.run(debug=True, port=5050)
