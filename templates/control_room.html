@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}National Control Room · Section DSS{% endblock %}
 {% block content %}
+<style>
+  .sig-red { background: #ff2e2e !important; color: #fff !important; }
+  .sig-yellow { background: #f08a24 !important; color: #fff !important; }
+  .sig-green { background: #0f8b4c !important; color: #fff !important; }
+</style>
 <section class="panel hero">
   <div>
     <h2>National rail traffic control room</h2>
@@ -25,6 +30,7 @@
       <thead>
         <tr><th>Train</th><th>Zone</th><th>Section</th><th>Decision</th><th>Reroute</th><th>Reason</th></tr>
       </thead>
+      <tbody>
         {% for row in trains %}
         <tr>
           <td><span class="pill">{{ row.code }}</span> {{ row.name }}<br><small class="muted" style="font-size: 0.8em">Priority: {{ row.priority }} | {{ row.category }}</small></td>
@@ -46,13 +52,17 @@
                 <tbody>
                   {% for seg in row.schedule %}
                   <tr>
-                    <td>{{ seg.from }} &rarr; {{ seg.to }}</td>
+                    <td>{{ seg['from'] }} &rarr; {{ seg['to'] }}</td>
                     <td>{{ seg.km }} km</td>
                     <td>{{ seg.run_min }} min</td>
                     <td>{{ seg.speed }} km/h</td>
                     <td>{{ seg.start }}</td>
                     <td>{{ seg.end }}</td>
-                    <td><span class="decision ok" style="padding: 2px 6px; font-size: 0.8em">{{ seg.signal }}</span></td>
+                    <td>
+                      <span class="decision {% if seg.signal == 'RED' %}sig-red{% elif seg.signal == 'YELLOW' %}sig-yellow{% else %}sig-green{% endif %}" style="padding: 2px 6px; font-size: 0.8em;">
+                        {{ seg.signal }}
+                      </span>
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>

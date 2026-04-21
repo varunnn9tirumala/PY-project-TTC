@@ -61,7 +61,13 @@
     live.trains.forEach((t) => {
       const query = smartSearch ? smartSearch.value.toLowerCase() : "";
       if (query && !t.code.toLowerCase().includes(query)) return;
-      ctx.fillStyle = t.decision === "HOLD" ? "#c45c26" : "#0f8b4c";
+      if (t.decision === "RED" || t.decision === "HOLD") {
+        ctx.fillStyle = "#ff2e2e";
+      } else if (t.decision === "YELLOW") {
+        ctx.fillStyle = "#f08a24";
+      } else {
+        ctx.fillStyle = "#0f8b4c";
+      }
       ctx.beginPath();
       ctx.arc(t.x, t.y, 3.5, 0, Math.PI * 2);
       ctx.fill();
@@ -78,16 +84,23 @@
   let throughputChart;
   async function fetchAnalytics() {
     const res = await fetch("/api/analytics");
+    if (!res.ok) return;
     const data = await res.json();
     const common = { labels: data.labels };
     const options = { responsive: true, animation: false };
     const cfg = (label, arr, color) => ({ type: "line", data: { ...common, datasets: [{ label, data: arr, borderColor: color, backgroundColor: color }] }, options });
 
+    const tc = document.getElementById("throughput-chart");
+    if (!tc) return; // If we are on a page without charts, exit analytics fetch
+
     if (!throughputChart) {
-      throughputChart = new Chart(document.getElementById("throughput-chart"), cfg("Throughput trend", data.throughput, "#0b4f8c"));
-      new Chart(document.getElementById("delay-chart"), cfg("Delay trend", data.delay, "#c45c26"));
-      new Chart(document.getElementById("util-chart"), cfg("Platform utilization", data.utilization, "#0f8b4c"));
-      new Chart(document.getElementById("conflict-chart"), cfg("Conflict count reduction", data.conflicts, "#aa2ee6"));
+      throughputChart = new Chart(tc, cfg("Throughput trend", data.throughput, "#0b4f8c"));
+      const dc = document.getElementById("delay-chart");
+      if (dc) new Chart(dc, cfg("Delay trend", data.delay, "#c45c26"));
+      const uc = document.getElementById("util-chart");
+      if (uc) new Chart(uc, cfg("Platform utilization", data.utilization, "#0f8b4c"));
+      const cc = document.getElementById("conflict-chart");
+      if (cc) new Chart(cc, cfg("Conflict count reduction", data.conflicts, "#aa2ee6"));
     } else {
       throughputChart.data.labels = data.labels;
       throughputChart.data.datasets[0].data = data.throughput;

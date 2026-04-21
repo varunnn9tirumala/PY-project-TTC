@@ -256,29 +256,61 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
             for seg in route_meta["segments"]:
                 seg_id = f"{t.section}_{seg['from']}_{seg['to']}"
                 km = float(seg["km"])
-                # calculate run_min based on avg_speed_kmph
-                run_min = max(2, int((km / t.avg_speed_kmph) * 60))
+                
+                # Base dynamic speed
+                target_speed = t.avg_speed_kmph
+                if t.delay_min > 0:
+                    # Make up time if delayed
+                    target_speed = min(130, int(t.avg_speed_kmph * 1.15))
+                    
+                min_speed = max(30, int(t.avg_speed_kmph * 0.5))
+                run_min = max(2, int((km / target_speed) * 60))
                 
                 occupancy = segment_occupancy.setdefault(seg_id, [])
+                
+                signal = "GREEN"
+                actual_speed = target_speed
+                hold_at_start = 0
                 
                 # Check for conflicts on this pin-to-pin segment
                 while True:
                     conflict = False
                     for occ_start, occ_end, occ_pri, occ_code in occupancy:
                         # Headway: must be headway_min clear of any existing train
-                        # This avoids rear-end collisions and allows safe braking distance
                         if not (current_time + timedelta(minutes=run_min) + timedelta(minutes=headway_min) <= occ_start or 
                                 current_time >= occ_end + timedelta(minutes=headway_min)):
                             conflict = True
                             wait_until = occ_end + timedelta(minutes=headway_min)
+                            
+                            # Attempt pacing (YELLOW) if we are arriving too early behind another train
                             if wait_until > current_time:
+                                pacing_run_min = int((wait_until - current_time).total_seconds() / 60)
+                                if pacing_run_min > run_min:
+                                    pacing_speed = int((km / pacing_run_min) * 60)
+                                    if pacing_speed >= min_speed:
+                                        # Pacing successful, we don't need to hold
+                                        run_min = pacing_run_min
+                                        actual_speed = pacing_speed
+                                        signal = "YELLOW"
+                                        conflict = False
+                                        explanations.append(f"Train {t.code} pacing at {actual_speed} km/h (YELLOW) behind {occ_code} to {seg['to']}.")
+                                        break
+                                
+                            if conflict and wait_until > current_time:
                                 hold_time = int((wait_until - current_time).total_seconds() / 60)
                                 if hold_time > 0:
-                                    explanations.append(f"Train {t.code} held {hold_time} min at {seg['from']} siding to give way to higher priority {occ_code} ({occ_pri}).")
+                                    hold_at_start += hold_time
                                     current_time = wait_until
+                                    signal = "RED"
+                                    # Revert to target_speed after holding
+                                    actual_speed = target_speed
+                                    run_min = max(2, int((km / target_speed) * 60))
                             break
                     if not conflict:
                         break
+                
+                if hold_at_start > 0:
+                    explanations.append(f"Train {t.code} held {hold_at_start} min at {seg['from']} siding (RED) to clear route.")
                 
                 end_time = current_time + timedelta(minutes=run_min)
                 occupancy.append((current_time, end_time, t.priority, t.code))
@@ -291,9 +323,9 @@ def optimize_plan(trains: list[Train]) -> tuple[list[dict[str, Any]], list[str]]
                     "end": end_time.strftime("%H:%M:%S"),
                     "start_dt": current_time.isoformat(),
                     "end_dt": end_time.isoformat(),
-                    "speed": t.avg_speed_kmph,
+                    "speed": actual_speed,
                     "run_min": run_min,
-                    "signal": "GREEN"
+                    "signal": signal
                 })
                 current_time = end_time
             
@@ -827,7 +859,7 @@ def api_live_map():
                         "x": x,
                         "y": y,
                         "section": r["section"],
-                        "decision": "PROCEED",
+                        "decision": current_segment.get("signal", "GREEN"),
                         "current_segment": current_segment,
                     }
                 )
@@ -845,7 +877,7 @@ def api_live_map():
                         "x": src["x"],
                         "y": src["y"],
                         "section": r["section"],
-                        "decision": "HOLD",
+                        "decision": "RED",
                         "current_segment": first_seg,
                     })
             elif now > datetime.fromisoformat(last_seg["end_dt"]):
